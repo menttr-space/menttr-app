@@ -1,1 +1,8 @@
+# Dependencies
+node_modules
+
+# Build Outputs
+dist
+
+# Misc
 .DS_Store

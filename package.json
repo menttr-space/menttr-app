@@ -1,0 +1,14 @@
+{
+  "name": "menttr-app",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm --recursive --parallel run build",
+    "start:dev": "pnpm --recursive --parallel run start:dev",
+    "test": "pnpm --recursive run test --passWithNoTests"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  }
+}
