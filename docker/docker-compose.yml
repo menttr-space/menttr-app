@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:17
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PG_DATABASE_USER}
+      POSTGRES_PASSWORD: ${PG_DATABASE_PASSWORD}
+    ports:
+      - "5432:5432" # dev
+    restart: always
+
+volumes:
+  pgdata:
