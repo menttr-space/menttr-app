@@ -1,26 +1,48 @@
-import { All, Controller, HttpStatus, Req, Res } from "@nestjs/common";
-import { Request, Response } from "express";
+import { All, Controller, HttpStatus, Next, Req, Res } from "@nestjs/common";
+import { NextFunction, Request, Response } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 
-const routes: Record<string, string> = {};
+const routes: Record<string, string> = {
+  "/auth": "http://localhost:3001/auth",
+  "/user": "http://localhost:3001/user",
+};
 
-@Controller()
+const proxyMiddlewares: Record<
+  string,
+  ReturnType<typeof createProxyMiddleware>
+> = {};
+
+// Pre-create proxy middlewares for each route
+for (const [route, target] of Object.entries(routes)) {
+  proxyMiddlewares[route] = createProxyMiddleware({
+    target,
+    changeOrigin: true,
+    pathRewrite: {
+      [`^/api${route}`]: "", // strip /api and service prefix
+    },
+  });
+}
+
+@Controller("api")
 export class ProxyController {
-  @All("*")
-  handleRequest(@Req() req: Request, @Res() res: Response) {
-    const route = Object.keys(routes).find((path) => req.path.startsWith(path));
-    if (!route) {
+  @All("*path")
+  handleRequest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    const path = req.path.replace(/^\/api/, "");
+
+    const matchedRoute = Object.keys(routes).find((prefix) =>
+      path.startsWith(prefix),
+    );
+
+    if (!matchedRoute) {
       return res
         .status(HttpStatus.NOT_FOUND)
         .json({ message: "Service not found" });
     }
 
-    const proxy = createProxyMiddleware({
-      target: routes[route],
-      changeOrigin: true,
-      pathRewrite: (path) => path.replace(route, ""),
-    });
-
-    return proxy(req, res, () => null);
+    return proxyMiddlewares[matchedRoute](req, res, next);
   }
 }
