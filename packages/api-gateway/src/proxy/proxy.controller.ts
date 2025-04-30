@@ -6,6 +6,8 @@ const routes: Record<string, string> = {
   "/auth": "http://localhost:3001/auth",
   "/user": "http://localhost:3001/user",
   "/admin": "http://localhost:3001/admin",
+  "/program": "http://localhost:3002/program",
+  "/participants": "http://localhost:3002/participants",
 };
 
 const proxyMiddlewares: Record<
