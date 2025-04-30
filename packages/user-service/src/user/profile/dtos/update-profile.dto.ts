@@ -3,7 +3,9 @@ import {
   IsString,
   Matches,
   Length,
-  MaxLength,
+  IsArray,
+  ArrayNotEmpty,
+  ArrayUnique,
 } from "class-validator";
 
 export class UpdateProfileDto {
@@ -28,7 +30,7 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(600, { message: "Bio must be at most 600 characters." })
+  @Length(1, 600, { message: "Bio must be at most 600 characters." })
   bio?: string;
 
   @IsOptional()
@@ -38,11 +40,30 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
+  @Length(1, 100)
   company?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
+  @Length(1, 100)
   jobTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  socialLink?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({ each: true })
+  skillIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({ each: true })
+  specializationIds?: string[];
 }

@@ -9,11 +9,17 @@ import { Repository } from "typeorm";
 import { UpdateProfileDto } from "./dtos/update-profile.dto";
 import { ConvertToMentorDto } from "./dtos/convert-to-mentor.dto";
 import { Role } from "src/common/enums/role.enum";
+import { UserSkill } from "src/common/entities/user-skill.entity";
+import { UserSpecialization } from "src/common/entities/user-specialization.entity";
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserSkill)
+    private readonly userSkillRepository: Repository<UserSkill>,
+    @InjectRepository(UserSpecialization)
+    private readonly userSpecializationRepository: Repository<UserSpecialization>,
   ) {}
 
   async getPublicProfile(userId: string) {
@@ -39,7 +45,11 @@ export class ProfileService {
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["skills", "specializations"],
+    });
+
     if (!user) {
       throw new NotFoundException("User not found.");
     }
@@ -59,11 +69,29 @@ export class ProfileService {
     }
 
     // Handle profile image
-    const { profileImage, ...rest } = dto;
+    const { profileImage, skillIds, specializationIds, ...rest } = dto;
+
+    if (skillIds) {
+      user.skills = [];
+      user.skills = skillIds.map((skillId) =>
+        this.userSkillRepository.create({ skillId, user }),
+      );
+    }
+
+    if (specializationIds) {
+      user.specializations = [];
+      user.specializations = specializationIds.map((specializationId) =>
+        this.userSpecializationRepository.create({ specializationId, user }),
+      );
+    }
 
     Object.assign(user, rest);
 
-    return await this.userRepository.save(user);
+    await this.userRepository.save(user);
+
+    // TODO: return dto
+
+    return { success: true };
   }
 
   async convertToMentor(userId: string, dto: ConvertToMentorDto) {
@@ -87,9 +115,19 @@ export class ProfileService {
       );
     }
 
-    const { profileImage, ...rest } = dto;
+    const { profileImage, skillIds, specializationIds, ...rest } = dto;
 
     // TODO: Handle profile image upload
+
+    user.skills = [];
+    user.skills = skillIds.map((skillId) =>
+      this.userSkillRepository.create({ skillId, user }),
+    );
+
+    user.specializations = [];
+    user.specializations = specializationIds.map((specializationId) =>
+      this.userSpecializationRepository.create({ specializationId, user }),
+    );
 
     Object.assign(user, rest);
     user.mentorAppliedAt = new Date();
