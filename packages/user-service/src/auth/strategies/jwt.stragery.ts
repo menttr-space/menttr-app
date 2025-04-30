@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { AuthContext, JwtPayload } from "../types/auth-context.type";
+import { JwtPayload } from "../types/auth-context.type";
 import { Repository } from "typeorm";
 import { User } from "src/common/entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<AuthContext> {
+  async validate(payload: JwtPayload) {
     const user = await this.userRepository.findOne({
       where: { id: payload.sub },
     });
@@ -30,7 +30,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
       throw new BadRequestException("User not found");
     }
 
-    // This returned value becomes request.user
-    return { user };
+    return user;
   }
 }

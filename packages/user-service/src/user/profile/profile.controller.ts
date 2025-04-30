@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { AuthUser } from "src/common/decorators/auth-user.decorator";
 import { User } from "src/common/entities/user.entity";
@@ -6,18 +14,23 @@ import { ProfileService } from "./profile.service";
 import { UpdateProfileDto } from "./dtos/update-profile.dto";
 import { ConvertToMentorDto } from "./dtos/convert-to-mentor.dto";
 
-@Controller("user/profile")
+@Controller("user")
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  @UseGuards(AuthGuard("jwt"))
-  @Get()
-  getProfile(@AuthUser() user: User) {
-    return this.profileService.getUserProfile(user.id);
+  @Get(":userId/profile")
+  getPublicProfile(@Param("userId") userId: string) {
+    return this.profileService.getPublicProfile(userId);
   }
 
   @UseGuards(AuthGuard("jwt"))
-  @Put()
+  @Get("profile")
+  getProfile(@AuthUser() user: User) {
+    return this.profileService.getProfile(user.id);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("profile")
   updateProfile(
     @AuthUser() user: User,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -26,7 +39,7 @@ export class ProfileController {
   }
 
   @UseGuards(AuthGuard("jwt"))
-  @Post("convert-to-mentor")
+  @Post("profile/convert-to-mentor")
   convertToMentor(
     @AuthUser() user: User,
     @Body() convertToMentorDto: ConvertToMentorDto,

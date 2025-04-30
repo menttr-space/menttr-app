@@ -1,20 +1,26 @@
-import { IsString } from "class-validator";
+import { IsString, Length } from "class-validator";
 
 export class ConvertToMentorDto {
   @IsString()
+  @Length(1, 30)
   displayName: string;
 
   @IsString()
   profileImage: string;
 
   @IsString()
+  @Length(1, 600)
   bio: string;
 
   @IsString()
+  @Length(1, 600)
   company: string;
 
   @IsString()
+  @Length(1, 600)
   jobTitle: string;
 
-  // more fields to become a mentor ...
+  @IsString()
+  @Length(1, 100)
+  socialLink: string;
 }

@@ -39,17 +39,26 @@ export class User {
   @Column({ length: 600, nullable: true })
   bio: string;
 
+  @Column({ length: 2, nullable: true })
+  country: string; // ISO 3166-1 alpha-2 code
+
   @Column({ length: 100, nullable: true })
   company: string;
 
   @Column({ name: "job_title", length: 100, nullable: true })
   jobTitle: string;
 
+  @Column({ name: "social_link", length: 100, nullable: true })
+  socialLink: string;
+
   @Column({ name: "mentor_applied_at", type: "timestamptz", nullable: true })
   mentorAppliedAt: Date;
 
   @Column({ name: "mentor_approved_at", type: "timestamptz", nullable: true })
   mentorApprovedAt: Date;
+
+  @Column({ name: "mentor_rejected_at", type: "timestamptz", nullable: true })
+  mentorRejectedAt: Date;
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt: Date;

@@ -5,6 +5,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 const routes: Record<string, string> = {
   "/auth": "http://localhost:3001/auth",
   "/user": "http://localhost:3001/user",
+  "/admin": "http://localhost:3001/admin",
 };
 
 const proxyMiddlewares: Record<

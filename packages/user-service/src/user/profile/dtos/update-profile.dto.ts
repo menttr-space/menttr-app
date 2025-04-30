@@ -30,4 +30,19 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(600, { message: "Bio must be at most 600 characters." })
   bio?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2)
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  company?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  jobTitle?: string;
 }

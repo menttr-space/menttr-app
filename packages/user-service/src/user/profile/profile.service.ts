@@ -16,7 +16,18 @@ export class ProfileService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async getUserProfile(userId: string) {
+  async getPublicProfile(userId: string) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    const { passwordHash, email, ...rest } = user;
+
+    return rest;
+  }
+
+  async getProfile(userId: string) {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new NotFoundException("User not found.");
@@ -34,6 +45,10 @@ export class ProfileService {
     }
 
     if (dto.username) {
+      if (dto.username === user.username) {
+        throw new BadRequestException("Please choose a different username.");
+      }
+
       const existingUsername = await this.userRepository.findOneBy({
         username: dto.username,
       });
@@ -58,7 +73,7 @@ export class ProfileService {
     }
 
     if (
-      user.role !== Role.Mentee ||
+      user.role === Role.Mentor ||
       (user.mentorApprovedAt && user.mentorApprovedAt < new Date())
     ) {
       throw new BadRequestException(
@@ -68,18 +83,20 @@ export class ProfileService {
 
     if (user.mentorAppliedAt && user.mentorAppliedAt < new Date()) {
       throw new BadRequestException(
-        "Mentor application already submitted. You cannot apply again.",
+        "You have already applied to be a mentor. Please wait for you application to be reviewed.",
       );
     }
 
     const { profileImage, ...rest } = dto;
+
+    // TODO: Handle profile image upload
 
     Object.assign(user, rest);
     user.mentorAppliedAt = new Date();
 
     await this.userRepository.save(user);
 
-    // Send admin request
+    // TODO: Send notification to admin about new application
 
     return { success: true };
   }
