@@ -46,9 +46,17 @@ export class CreateProgramDto {
   @MaxLength(200)
   meetingLink?: string;
 
+  @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
   @ArrayUnique()
-  @IsInt({ each: true })
-  categories: number[];
+  @IsString({ each: true })
+  skillIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({ each: true })
+  specializationIds?: string[];
 }

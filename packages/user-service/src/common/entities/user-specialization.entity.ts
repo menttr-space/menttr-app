@@ -26,10 +26,4 @@ export class UserSpecialization {
 
   @Column("uuid", { name: "specialization_id" })
   specializationId: string;
-
-  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
-  updatedAt: Date;
 }

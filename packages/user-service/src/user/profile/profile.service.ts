@@ -68,28 +68,33 @@ export class ProfileService {
       }
     }
 
-    // Handle profile image
     const { profileImage, skillIds, specializationIds, ...rest } = dto;
 
+    Object.entries(rest).forEach(([key, value]) => {
+      if (value !== undefined) {
+        user[key] = value;
+      }
+    });
+
+    // TODO: Handle profile image
+
     if (skillIds) {
-      user.skills = [];
+      await this.userSkillRepository.delete({ userId });
       user.skills = skillIds.map((skillId) =>
         this.userSkillRepository.create({ skillId, user }),
       );
     }
 
     if (specializationIds) {
-      user.specializations = [];
+      await this.userSpecializationRepository.delete({ userId });
       user.specializations = specializationIds.map((specializationId) =>
         this.userSpecializationRepository.create({ specializationId, user }),
       );
     }
 
-    Object.assign(user, rest);
-
     await this.userRepository.save(user);
 
-    // TODO: return dto
+    // TODO: return dto?
 
     return { success: true };
   }
@@ -117,20 +122,21 @@ export class ProfileService {
 
     const { profileImage, skillIds, specializationIds, ...rest } = dto;
 
+    Object.assign(user, rest);
+
     // TODO: Handle profile image upload
 
-    user.skills = [];
+    user.mentorAppliedAt = new Date();
+
+    await this.userSkillRepository.delete({ userId });
     user.skills = skillIds.map((skillId) =>
       this.userSkillRepository.create({ skillId, user }),
     );
 
-    user.specializations = [];
+    await this.userSpecializationRepository.delete({ userId });
     user.specializations = specializationIds.map((specializationId) =>
       this.userSpecializationRepository.create({ specializationId, user }),
     );
-
-    Object.assign(user, rest);
-    user.mentorAppliedAt = new Date();
 
     await this.userRepository.save(user);
 

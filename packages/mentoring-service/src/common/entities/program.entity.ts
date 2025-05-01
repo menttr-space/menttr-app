@@ -2,16 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Category } from "./category.entity";
 import { ProgramStatus } from "../enums/program-status.enum";
 import { ProgramType } from "../enums/program-type.enum";
 import { ProgramParticipant } from "./program-participant.entity";
+import { ProgramSkill } from "./program-skill.entity";
+import { ProgramSpecialization } from "./program-specialization.entity";
 
 @Entity({ name: "programs" })
 export class Program {
@@ -55,17 +54,15 @@ export class Program {
   @Column({ name: "meeting_link", length: 200, nullable: true })
   meetingLink: string;
 
+  @OneToMany(() => ProgramSkill, (ps) => ps.program, { cascade: true })
+  skills: ProgramSkill[];
+
+  @OneToMany(() => ProgramSpecialization, (ps) => ps.program, { cascade: true })
+  specializations: ProgramSpecialization[];
+
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt: Date;
 
   @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt: Date;
-
-  @ManyToMany(() => Category, (category) => category.programs)
-  @JoinTable({
-    name: "programs_categories",
-    joinColumn: { name: "program_id", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "category_id", referencedColumnName: "id" },
-  })
-  categories: Category[];
 }

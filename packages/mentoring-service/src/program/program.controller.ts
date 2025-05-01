@@ -20,6 +20,7 @@ import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 export class ProgramController {
   constructor(private readonly programService: ProgramService) {}
 
+  // No longer valid
   @Get("feed")
   getProgramsFeed(@Query("categories") categories?: string) {
     const categoriesIds = categories
@@ -66,7 +67,7 @@ export class ProgramController {
     return this.programService.applyForProgram(programId, dto, ctx);
   }
 
-  // Move this to a separate user/programs module?
+  // programs?user_id enpoint
   @Get("user/:userId")
   getPrograms(@Param("userId") userId: string) {
     return this.programService.getUserPrograms(userId);

@@ -7,22 +7,25 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Program } from "src/common/entities/program.entity";
-import { In, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateProgramDto } from "./dtos/create-program.dto";
 import { UpdateProgramDto } from "./dtos/update-program.dto";
 import { AuthContext } from "src/auth/auth-context.type";
-import { Category } from "src/common/entities/category.entity";
 import { ProgramStatus } from "src/common/enums/program-status.enum";
 import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 import { ProgramParticipantService } from "src/program-participant/program-participant.service";
+import { ProgramSkill } from "src/common/entities/program-skill.entity";
+import { ProgramSpecialization } from "src/common/entities/program-specialization.entity";
 
 @Injectable()
 export class ProgramService {
   constructor(
     @InjectRepository(Program)
     private readonly programRepository: Repository<Program>,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(ProgramSkill)
+    private readonly programSkillRepository: Repository<ProgramSkill>,
+    @InjectRepository(ProgramSpecialization)
+    private readonly programSpecializationRepository: Repository<ProgramSpecialization>,
     private readonly programParticipantService: ProgramParticipantService,
   ) {}
 
@@ -42,7 +45,10 @@ export class ProgramService {
   }
 
   getProgram(programId: string) {
-    return this.programRepository.findOneBy({ id: programId });
+    return this.programRepository.findOne({
+      where: { id: programId },
+      relations: ["skills", "specializations"],
+    });
   }
 
   async createProgram(dto: CreateProgramDto, ctx: AuthContext) {
@@ -54,19 +60,30 @@ export class ProgramService {
       throw new BadRequestException("End date cannot be before start date.");
     }
 
-    const categories = await this.categoryRepository.findBy({
-      id: In(dto.categories),
+    const program = this.programRepository.create({
+      ...dto,
+      ownerId: ctx.user.id,
+      status: ProgramStatus.Enrollment,
     });
 
-    if (categories.length !== dto.categories.length) {
-      throw new BadRequestException("One or more categories not found");
+    await this.programRepository.save(program);
+
+    const { skillIds, specializationIds } = dto;
+
+    if (skillIds) {
+      program.skills = skillIds.map((skillId) =>
+        this.programSkillRepository.create({ skillId, program }),
+      );
     }
 
-    const program = new Program();
-
-    Object.assign(program, dto);
-    program.ownerId = ctx.user.id;
-    program.status = ProgramStatus.Enrollment;
+    if (specializationIds) {
+      program.specializations = specializationIds.map((specializationId) =>
+        this.programSpecializationRepository.create({
+          specializationId,
+          program,
+        }),
+      );
+    }
 
     return this.programRepository.save(program);
   }
@@ -82,8 +99,8 @@ export class ProgramService {
 
     const program = await this.programRepository.findOne({
       where: { id: programId, ownerId: ctx.user.id },
-      relations: ["categories"],
     });
+
     if (!program) {
       throw new NotFoundException("Program not found.");
     }
@@ -96,13 +113,8 @@ export class ProgramService {
 
     const { meetingLink, status, ...restNotUpdatableAfterEnrollment } = dto;
 
-    if (meetingLink) {
-      program.meetingLink = meetingLink;
-    }
-
-    if (status) {
-      program.status = status;
-    }
+    program.meetingLink = meetingLink ?? program.meetingLink;
+    program.status = status ?? program.status;
 
     // Fields NOT allowed to be updated after enrollment
 
@@ -118,10 +130,19 @@ export class ProgramService {
       }
     }
 
-    const { startDate, endDate, categories, ...restUpdateable } =
-      restNotUpdatableAfterEnrollment;
+    const {
+      startDate,
+      endDate,
+      skillIds,
+      specializationIds,
+      ...restUpdateable
+    } = restNotUpdatableAfterEnrollment;
 
-    // Specific validation
+    Object.entries(restUpdateable).forEach(([key, value]) => {
+      if (value !== undefined) {
+        program[key] = value;
+      }
+    });
 
     if (startDate) {
       const compareEndDate = endDate ?? program.endDate;
@@ -141,25 +162,22 @@ export class ProgramService {
       program.endDate = endDate;
     }
 
-    if (categories) {
-      const existingCategories = await this.categoryRepository.findBy({
-        id: In(categories),
-      });
-
-      if (existingCategories.length !== categories.length) {
-        throw new NotFoundException("One or more categories not found");
-      }
-
-      program.categories = existingCategories;
+    if (skillIds) {
+      await this.programSkillRepository.delete({ programId });
+      program.skills = skillIds.map((skillId) =>
+        this.programSkillRepository.create({ skillId, program }),
+      );
     }
 
-    // Rest
-
-    Object.entries(restUpdateable).forEach(([key, value]) => {
-      if (value !== undefined) {
-        program[key] = value;
-      }
-    });
+    if (specializationIds) {
+      await this.programSpecializationRepository.delete({ programId });
+      program.specializations = specializationIds.map((specializationId) =>
+        this.programSpecializationRepository.create({
+          specializationId,
+          program,
+        }),
+      );
+    }
 
     return this.programRepository.save(program);
   }
