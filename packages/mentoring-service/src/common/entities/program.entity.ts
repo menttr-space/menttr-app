@@ -10,7 +10,6 @@ import { ProgramStatus } from "../enums/program-status.enum";
 import { ProgramType } from "../enums/program-type.enum";
 import { ProgramParticipant } from "./program-participant.entity";
 import { ProgramSkill } from "./program-skill.entity";
-import { ProgramSpecialization } from "./program-specialization.entity";
 
 @Entity({ name: "programs" })
 export class Program {
@@ -56,9 +55,6 @@ export class Program {
 
   @OneToMany(() => ProgramSkill, (ps) => ps.program, { cascade: true })
   skills: ProgramSkill[];
-
-  @OneToMany(() => ProgramSpecialization, (ps) => ps.program, { cascade: true })
-  specializations: ProgramSpecialization[];
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt: Date;

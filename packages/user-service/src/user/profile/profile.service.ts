@@ -10,7 +10,6 @@ import { UpdateProfileDto } from "./dtos/update-profile.dto";
 import { ConvertToMentorDto } from "./dtos/convert-to-mentor.dto";
 import { Role } from "src/common/enums/role.enum";
 import { UserSkill } from "src/common/entities/user-skill.entity";
-import { UserSpecialization } from "src/common/entities/user-specialization.entity";
 
 @Injectable()
 export class ProfileService {
@@ -18,8 +17,6 @@ export class ProfileService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(UserSkill)
     private readonly userSkillRepository: Repository<UserSkill>,
-    @InjectRepository(UserSpecialization)
-    private readonly userSpecializationRepository: Repository<UserSpecialization>,
   ) {}
 
   async getPublicProfile(userId: string) {
@@ -68,7 +65,7 @@ export class ProfileService {
       }
     }
 
-    const { profileImage, skillIds, specializationIds, ...rest } = dto;
+    const { profileImage, skillIds, ...rest } = dto;
 
     Object.entries(rest).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -82,13 +79,6 @@ export class ProfileService {
       await this.userSkillRepository.delete({ userId });
       user.skills = skillIds.map((skillId) =>
         this.userSkillRepository.create({ skillId, user }),
-      );
-    }
-
-    if (specializationIds) {
-      await this.userSpecializationRepository.delete({ userId });
-      user.specializations = specializationIds.map((specializationId) =>
-        this.userSpecializationRepository.create({ specializationId, user }),
       );
     }
 
@@ -120,7 +110,7 @@ export class ProfileService {
       );
     }
 
-    const { profileImage, skillIds, specializationIds, ...rest } = dto;
+    const { profileImage, skillIds, ...rest } = dto;
 
     Object.assign(user, rest);
 
@@ -131,11 +121,6 @@ export class ProfileService {
     await this.userSkillRepository.delete({ userId });
     user.skills = skillIds.map((skillId) =>
       this.userSkillRepository.create({ skillId, user }),
-    );
-
-    await this.userSpecializationRepository.delete({ userId });
-    user.specializations = specializationIds.map((specializationId) =>
-      this.userSpecializationRepository.create({ specializationId, user }),
     );
 
     await this.userRepository.save(user);

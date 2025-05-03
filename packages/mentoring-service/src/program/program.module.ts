@@ -6,12 +6,11 @@ import { Program } from "src/common/entities/program.entity";
 import { AuthModule } from "src/auth/auth.module";
 import { ProgramParticipantModule } from "src/program-participant/program-participant.module";
 import { ProgramSkill } from "src/common/entities/program-skill.entity";
-import { ProgramSpecialization } from "src/common/entities/program-specialization.entity";
 import { RmqClientsModule } from "src/clients/rmq-clients.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Program, ProgramSkill, ProgramSpecialization]),
+    TypeOrmModule.forFeature([Program, ProgramSkill]),
     AuthModule,
     ProgramParticipantModule,
     RmqClientsModule,

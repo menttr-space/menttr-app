@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { ProgramParticipant } from "src/common/entities/program-participant.entity";
 import { ProgramSkill } from "src/common/entities/program-skill.entity";
-import { ProgramSpecialization } from "src/common/entities/program-specialization.entity";
 import { Program } from "src/common/entities/program.entity";
 
 const typeORMPostgresFactory = (
@@ -11,7 +10,7 @@ const typeORMPostgresFactory = (
 ): TypeOrmModuleOptions => ({
   type: "postgres",
   url: config.get<string>("PG_DATABASE_URL"),
-  entities: [Program, ProgramParticipant, ProgramSkill, ProgramSpecialization],
+  entities: [Program, ProgramParticipant, ProgramSkill],
   synchronize: true,
 });
 

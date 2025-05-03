@@ -35,10 +35,4 @@ export class ConvertToMentorDto {
   @ArrayUnique()
   @IsString({ each: true })
   skillIds: string[];
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @ArrayUnique()
-  @IsString({ each: true })
-  specializationIds: string[];
 }

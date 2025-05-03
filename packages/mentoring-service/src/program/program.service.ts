@@ -16,7 +16,6 @@ import { ProgramStatus } from "src/common/enums/program-status.enum";
 import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 import { ProgramParticipantService } from "src/program-participant/program-participant.service";
 import { ProgramSkill } from "src/common/entities/program-skill.entity";
-import { ProgramSpecialization } from "src/common/entities/program-specialization.entity";
 import { ClientProxy } from "@nestjs/microservices";
 import { SEARCH_SERVICE } from "src/clients/clients.constants";
 
@@ -27,8 +26,6 @@ export class ProgramService {
     private readonly programRepository: Repository<Program>,
     @InjectRepository(ProgramSkill)
     private readonly programSkillRepository: Repository<ProgramSkill>,
-    @InjectRepository(ProgramSpecialization)
-    private readonly programSpecializationRepository: Repository<ProgramSpecialization>,
     private readonly programParticipantService: ProgramParticipantService,
     @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
@@ -57,20 +54,11 @@ export class ProgramService {
 
     await this.programRepository.save(program);
 
-    const { skillIds, specializationIds } = dto;
+    const { skillIds } = dto;
 
     if (skillIds) {
       program.skills = skillIds.map((skillId) =>
         this.programSkillRepository.create({ skillId, program }),
-      );
-    }
-
-    if (specializationIds) {
-      program.specializations = specializationIds.map((specializationId) =>
-        this.programSpecializationRepository.create({
-          specializationId,
-          program,
-        }),
       );
     }
 
@@ -86,7 +74,6 @@ export class ProgramService {
       maxParticipants: savedProgram.maxParticipants,
       activeParticipants: savedProgram.activeParticipants,
       skillIds: skillIds || [],
-      specializationIds: specializationIds || [],
       createdAt: savedProgram.createdAt.toISOString(),
     });
 
@@ -152,13 +139,8 @@ export class ProgramService {
       }
     }
 
-    const {
-      startDate,
-      endDate,
-      skillIds,
-      specializationIds,
-      ...restUpdateable
-    } = restNotUpdatableAfterEnrollment;
+    const { startDate, endDate, skillIds, ...restUpdateable } =
+      restNotUpdatableAfterEnrollment;
 
     Object.entries(restUpdateable).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -191,16 +173,6 @@ export class ProgramService {
       );
     }
 
-    if (specializationIds) {
-      await this.programSpecializationRepository.delete({ programId });
-      program.specializations = specializationIds.map((specializationId) =>
-        this.programSpecializationRepository.create({
-          specializationId,
-          program,
-        }),
-      );
-    }
-
     const savedProgram = await this.programRepository.save(program);
 
     this.rmqClient.emit("program.updated", {
@@ -213,7 +185,6 @@ export class ProgramService {
       maxParticipants: savedProgram.maxParticipants,
       activeParticipants: savedProgram.activeParticipants,
       skillIds: skillIds || [],
-      specializationIds: specializationIds || [],
       createdAt: savedProgram.createdAt.toISOString(),
     });
 

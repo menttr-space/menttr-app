@@ -9,7 +9,6 @@ import {
 import { Role } from "../enums/role.enum";
 import { UserToken } from "./user-token.entity";
 import { UserSkill } from "./user-skill.entity";
-import { UserSpecialization } from "./user-specialization.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -55,13 +54,6 @@ export class User {
 
   @OneToMany(() => UserSkill, (userSkill) => userSkill.user, { cascade: true })
   skills: UserSkill[];
-
-  @OneToMany(
-    () => UserSpecialization,
-    (userSpecialization) => userSpecialization.user,
-    { cascade: true },
-  )
-  specializations: UserSpecialization[];
 
   @Column({ name: "mentor_applied_at", type: "timestamptz", nullable: true })
   mentorAppliedAt: Date;

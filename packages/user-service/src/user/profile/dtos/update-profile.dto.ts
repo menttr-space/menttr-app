@@ -59,11 +59,4 @@ export class UpdateProfileDto {
   @ArrayUnique()
   @IsString({ each: true })
   skillIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  @ArrayUnique()
-  @IsString({ each: true })
-  specializationIds?: string[];
 }

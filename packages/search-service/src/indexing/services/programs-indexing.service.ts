@@ -14,25 +14,14 @@ export class ProgramsIndexingService extends IndexingService {
   }
 
   async index(index: string, id: string, document: Record<string, any>) {
-    const { skillIds, specializationIds, ...doc } = document;
+    const { skillIds, ...doc } = document;
     const skillIdsString = (skillIds as string[]).toString();
-    const specializationIdsString = (specializationIds as string[]).toString();
-
     const skills = await firstValueFrom(
       this.httpService.get<{ slug: string }[]>(
         `http://localhost:3003/taxonomy/skills?ids=${skillIdsString}`,
       ),
     );
-    const specializations = await firstValueFrom(
-      this.httpService.get<{ slug: string }[]>(
-        `http://localhost:3003/taxonomy/specializations?ids=${specializationIdsString}`,
-      ),
-    );
-
     doc.skills = skills.data.map((skill) => skill.slug);
-    doc.specializations = specializations.data.map(
-      (specialization) => specialization.slug,
-    );
 
     return super.index(index, id, doc);
   }
@@ -49,7 +38,6 @@ export class ProgramsIndexingService extends IndexingService {
           maxParticipants: { type: "integer" },
           activeParticipants: { type: "integer" },
           skills: { type: "keyword" },
-          specializations: { type: "keyword" },
           createdAt: { type: "date" },
         },
       },

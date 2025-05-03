@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { UserSkill } from "src/common/entities/user-skill.entity";
-import { UserSpecialization } from "src/common/entities/user-specialization.entity";
 import { UserToken } from "src/common/entities/user-token.entity";
 import { User } from "src/common/entities/user.entity";
 
@@ -11,7 +10,7 @@ const typeORMPostgresFactory = (
 ): TypeOrmModuleOptions => ({
   type: "postgres",
   url: config.get<string>("PG_DATABASE_URL"),
-  entities: [User, UserToken, UserSkill, UserSpecialization],
+  entities: [User, UserToken, UserSkill],
   synchronize: true,
 });
 
