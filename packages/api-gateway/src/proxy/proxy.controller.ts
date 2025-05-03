@@ -9,6 +9,7 @@ const routes: Record<string, string> = {
   "/program": "http://localhost:3002/program",
   "/participants": "http://localhost:3002/participants",
   "/taxonomy": "http://localhost:3003/taxonomy",
+  "/search": "http://localhost:3004/search",
 };
 
 const proxyMiddlewares: Record<

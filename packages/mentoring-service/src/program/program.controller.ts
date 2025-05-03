@@ -20,17 +20,10 @@ import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 export class ProgramController {
   constructor(private readonly programService: ProgramService) {}
 
-  // No longer valid
-  @Get("feed")
-  getProgramsFeed(@Query("categories") categories?: string) {
-    const categoriesIds = categories
-      ? categories
-          .split(",")
-          .map(Number)
-          .filter((n) => !isNaN(n))
-      : undefined;
-
-    return this.programService.getProgramsFeed(categoriesIds);
+  // programs?user_id enpoint
+  @Get("user/:userId")
+  getUserPrograms(@Param("userId") userId: string) {
+    return this.programService.getUserPrograms(userId);
   }
 
   @Get(":programId")
@@ -65,11 +58,5 @@ export class ProgramController {
     @Body() dto: ApplyForProgramDto,
   ) {
     return this.programService.applyForProgram(programId, dto, ctx);
-  }
-
-  // programs?user_id enpoint
-  @Get("user/:userId")
-  getPrograms(@Param("userId") userId: string) {
-    return this.programService.getUserPrograms(userId);
   }
 }

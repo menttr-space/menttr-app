@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -16,6 +17,8 @@ import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 import { ProgramParticipantService } from "src/program-participant/program-participant.service";
 import { ProgramSkill } from "src/common/entities/program-skill.entity";
 import { ProgramSpecialization } from "src/common/entities/program-specialization.entity";
+import { ClientProxy } from "@nestjs/microservices";
+import { SEARCH_SERVICE } from "src/clients/clients.constants";
 
 @Injectable()
 export class ProgramService {
@@ -27,22 +30,8 @@ export class ProgramService {
     @InjectRepository(ProgramSpecialization)
     private readonly programSpecializationRepository: Repository<ProgramSpecialization>,
     private readonly programParticipantService: ProgramParticipantService,
+    @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
-
-  async getProgramsFeed(categories?: number[]) {
-    const query = this.programRepository
-      .createQueryBuilder("programs")
-      .leftJoinAndSelect("programs.categories", "category");
-
-    if (categories && categories.length > 0) {
-      query.andWhere("category.id IN (:...categories)", { categories });
-    }
-
-    const items = await query.getMany();
-    // const allCategories = await this.categoryRepository.find();
-
-    return { items };
-  }
 
   getProgram(programId: string) {
     return this.programRepository.findOne({
@@ -85,7 +74,23 @@ export class ProgramService {
       );
     }
 
-    return this.programRepository.save(program);
+    const savedProgram = await this.programRepository.save(program);
+
+    this.rmqClient.emit("program.created", {
+      id: savedProgram.id,
+      title: savedProgram.title,
+      description: savedProgram.description || "",
+      type: savedProgram.type.toString(),
+      startDate: savedProgram.startDate.toISOString(),
+      endDate: savedProgram.endDate?.toISOString() || null,
+      maxParticipants: savedProgram.maxParticipants,
+      activeParticipants: savedProgram.activeParticipants,
+      skillIds: skillIds || [],
+      specializationIds: specializationIds || [],
+      createdAt: savedProgram.createdAt.toISOString(),
+    });
+
+    return savedProgram;
   }
 
   async updateProgram(
@@ -109,12 +114,29 @@ export class ProgramService {
       throw new BadRequestException("Cannot update program when completed.");
     }
 
+    if (
+      program.status !== ProgramStatus.Enrollment &&
+      dto.status === ProgramStatus.Enrollment
+    ) {
+      throw new BadRequestException(
+        "Cannot revert status back to 'Enrollment'.",
+      );
+    }
+
     // Fields allowed to be updated after enrollment
 
     const { meetingLink, status, ...restNotUpdatableAfterEnrollment } = dto;
 
-    program.meetingLink = meetingLink ?? program.meetingLink;
+    // If program status changed from enrollment, delete program search index
+    if (
+      program.status === ProgramStatus.Enrollment &&
+      status !== ProgramStatus.Enrollment
+    ) {
+      this.rmqClient.emit("program.enrollment.closed", { id: programId });
+    }
+
     program.status = status ?? program.status;
+    program.meetingLink = meetingLink ?? program.meetingLink;
 
     // Fields NOT allowed to be updated after enrollment
 
@@ -179,7 +201,23 @@ export class ProgramService {
       );
     }
 
-    return this.programRepository.save(program);
+    const savedProgram = await this.programRepository.save(program);
+
+    this.rmqClient.emit("program.updated", {
+      id: savedProgram.id,
+      title: savedProgram.title,
+      description: savedProgram.description || "",
+      type: savedProgram.type.toString(),
+      startDate: savedProgram.startDate.toISOString(),
+      endDate: savedProgram.endDate?.toISOString() || [],
+      maxParticipants: savedProgram.maxParticipants,
+      activeParticipants: savedProgram.activeParticipants,
+      skillIds: skillIds || [],
+      specializationIds: specializationIds || [],
+      createdAt: savedProgram.createdAt.toISOString(),
+    });
+
+    return savedProgram;
   }
 
   async applyForProgram(

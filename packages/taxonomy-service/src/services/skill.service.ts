@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Skill } from "src/entities/skill.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 @Injectable()
 export class SkillService {
@@ -16,5 +16,11 @@ export class SkillService {
 
   findById(id: string) {
     return this.skillRepository.findBy({ id });
+  }
+
+  findByIds(ids: string[]) {
+    return this.skillRepository.find({
+      where: { id: In(ids) },
+    });
   }
 }

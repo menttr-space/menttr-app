@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { SpecializationService } from "./services/specialization.service";
 import { SkillService } from "./services/skill.service";
 
@@ -10,7 +10,10 @@ export class AppController {
   ) {}
 
   @Get("skills")
-  findSkills() {
+  findSkillsByIds(@Query("ids") ids?: string) {
+    if (ids) {
+      return this.skillService.findByIds(ids.split(","));
+    }
     return this.skillService.findAll();
   }
 
@@ -20,7 +23,10 @@ export class AppController {
   }
 
   @Get("specializations")
-  findSpecializations() {
+  findSpecializations(@Query("ids") ids?: string) {
+    if (ids) {
+      return this.specializationService.findByIds(ids.split(","));
+    }
     return this.specializationService.findAll();
   }
 

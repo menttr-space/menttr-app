@@ -6,5 +6,5 @@ import { IsEnum, IsOptional } from "class-validator";
 export class UpdateProgramDto extends PartialType(CreateProgramDto) {
   @IsOptional()
   @IsEnum(ProgramStatus)
-  status: ProgramStatus;
+  status?: ProgramStatus;
 }
