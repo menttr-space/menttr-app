@@ -15,6 +15,11 @@ export class PostController {
     return this.postService.getPosts(query);
   }
 
+  @Post("bulk")
+  getPostsByIds(@Body("postIds") postIds: string[]) {
+    return this.postService.getPostsByIds(postIds);
+  }
+
   @UseGuards(AuthGuard("jwt"))
   @Post()
   createPost(

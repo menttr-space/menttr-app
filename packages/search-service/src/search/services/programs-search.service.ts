@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
-import { SearchQueryDto } from "./dtos/search-query.dto";
+import { ProgramsSearchQueryDto } from "../dtos/programs-search-query.dto";
 import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 
 @Injectable()
-export class SearchService {
+export class ProgramsSearchService {
   constructor(private readonly es: ElasticsearchService) {}
 
-  async searchPrograms(queryDto: SearchQueryDto) {
+  async search(queryDto: ProgramsSearchQueryDto) {
     const { query, ...filters } = queryDto;
 
     const must: QueryDslQueryContainer[] = [];
@@ -17,7 +17,7 @@ export class SearchService {
       must.push({
         multi_match: {
           query,
-          fields: ["title^3", "description"],
+          fields: ["title^2", "description"],
           fuzziness: "auto",
         },
       });

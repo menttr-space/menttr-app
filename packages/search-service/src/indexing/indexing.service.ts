@@ -1,49 +1,51 @@
-import { IndicesCreateRequest } from "@elastic/elasticsearch/lib/api/types";
+import {
+  IndexName,
+  IndicesCreateRequest,
+} from "@elastic/elasticsearch/lib/api/types";
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
 
 @Injectable()
 export abstract class IndexingService implements OnModuleInit {
+  protected abstract indexName: IndexName;
+
   constructor(private readonly es: ElasticsearchService) {}
 
   async onModuleInit() {
     await this.initIndices();
   }
 
-  async index(index: string, id: string, document: Record<string, any>) {
+  async index(id: string, document: Record<string, any>) {
     return this.es.index({
-      index,
+      index: this.indexName,
       id,
       document,
     });
   }
 
-  async update(index: string, id: string, partialDoc: Record<string, any>) {
+  async update(id: string, partialDoc: Record<string, any>) {
     return this.es.update({
-      index,
+      index: this.indexName,
       id,
       doc: partialDoc,
     });
   }
 
-  async delete(index: string, id: string) {
+  async delete(id: string) {
     return this.es.delete({
-      index,
+      index: this.indexName,
       id,
     });
   }
 
-  protected async ensureIndex(
-    index: string,
-    config: Omit<IndicesCreateRequest, "index">,
-  ) {
-    const exists = await this.es.indices.exists({ index });
+  protected async ensureIndex(config: Omit<IndicesCreateRequest, "index">) {
+    const exists = await this.es.indices.exists({ index: this.indexName });
     if (!exists) {
       await this.es.indices.create({
-        index,
+        index: this.indexName,
         ...config,
       });
-      console.log(`Created index: ${index}`);
+      console.log(`Created index: ${this.indexName}`);
     }
   }
 

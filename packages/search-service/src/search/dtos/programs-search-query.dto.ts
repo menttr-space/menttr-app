@@ -8,7 +8,7 @@ import {
   Min,
 } from "class-validator";
 
-export class SearchQueryDto {
+export class ProgramsSearchQueryDto {
   @IsOptional()
   @IsString()
   readonly query?: string;

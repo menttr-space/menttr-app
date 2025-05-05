@@ -1,20 +1,29 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Post } from "src/common/entities/post.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { GetPostsDto } from "./dtos/get-posts.dto";
 import { CreatePostDto } from "./dtos/create-post.dto";
 import { AuthContext } from "src/auth/auth-context.type";
+import { ClientProxy } from "@nestjs/microservices";
+import { SEARCH_SERVICE } from "src/clients/clients.constants";
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
+    @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getPosts({ cursor }: GetPostsDto) {
     return this.postRepository.find();
+  }
+
+  async getPostsByIds(ids: string[]) {
+    return this.postRepository.find({
+      where: { id: In(ids) },
+    });
   }
 
   async createPost(
@@ -28,6 +37,17 @@ export class PostService {
       createdAt,
     });
 
-    return this.postRepository.save(post);
+    const savedPost = await this.postRepository.save(post);
+
+    this.rmqClient.emit("discussion.created", {
+      id: savedPost.id,
+      type: "post",
+      title: savedPost.title,
+      content: savedPost.content,
+      postId: savedPost.id,
+      createdAt: savedPost.createdAt,
+    });
+
+    return savedPost;
   }
 }

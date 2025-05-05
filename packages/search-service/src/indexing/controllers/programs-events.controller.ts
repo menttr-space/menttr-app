@@ -10,16 +10,16 @@ export class ProgramsIndexingController {
 
   @EventPattern("program.created")
   async onProgramCreated(@Payload() { id, ...data }: any) {
-    await this.programsIndexingService.index("programs", id, data);
+    await this.programsIndexingService.index(id, data);
   }
 
   @EventPattern("program.updated")
   async onProgramUpdated(@Payload() { id, ...data }: any) {
-    await this.programsIndexingService.update("programs", id, data);
+    await this.programsIndexingService.update(id, data);
   }
 
   @EventPattern("program.enrollment.closed")
   async onProgramEnrollmentClosed(@Payload() { id }: any) {
-    await this.programsIndexingService.delete("programs", id);
+    await this.programsIndexingService.delete(id);
   }
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -9,6 +10,8 @@ import { IsNull, Repository } from "typeorm";
 import { AuthContext } from "src/auth/auth-context.type";
 import { Comment } from "src/common/entities/comment.entity";
 import { CreateCommentDto } from "./dtos/create-comment.dto";
+import { ClientProxy } from "@nestjs/microservices";
+import { SEARCH_SERVICE } from "src/clients/clients.constants";
 
 @Injectable()
 export class CommentService {
@@ -16,6 +19,7 @@ export class CommentService {
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
 
   async getComments(postId: string) {
@@ -68,6 +72,14 @@ export class CommentService {
 
     await this.postRepository.increment({ id: postId }, "commentsCount", 1);
 
+    this.rmqClient.emit("discussion.created", {
+      id: savedComment.id,
+      type: "comment",
+      content: savedComment.content,
+      postId: savedComment.postId,
+      createdAt: savedComment.createdAt,
+    });
+
     return savedComment;
   }
 
@@ -108,6 +120,15 @@ export class CommentService {
       "commentsCount",
       1,
     );
+
+    this.rmqClient.emit("discussion.created", {
+      id: savedReply.id,
+      type: "reply",
+      content: savedReply.content,
+      postId: savedReply.postId,
+      replyToId: savedReply.replyToId,
+      createdAt: savedReply.createdAt,
+    });
 
     return savedReply;
   }

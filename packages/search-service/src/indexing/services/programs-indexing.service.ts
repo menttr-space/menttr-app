@@ -6,6 +6,8 @@ import { firstValueFrom } from "rxjs";
 
 @Injectable()
 export class ProgramsIndexingService extends IndexingService {
+  protected indexName = "programs";
+
   constructor(
     es: ElasticsearchService,
     private readonly httpService: HttpService,
@@ -13,7 +15,7 @@ export class ProgramsIndexingService extends IndexingService {
     super(es);
   }
 
-  async index(index: string, id: string, document: Record<string, any>) {
+  async index(id: string, document: Record<string, any>) {
     const { skillIds, ...doc } = document;
     const skillIdsString = (skillIds as string[]).toString();
     const skills = await firstValueFrom(
@@ -23,11 +25,11 @@ export class ProgramsIndexingService extends IndexingService {
     );
     doc.skills = skills.data.map((skill) => skill.slug);
 
-    return super.index(index, id, doc);
+    return super.index(id, doc);
   }
 
   protected async initIndices() {
-    await this.ensureIndex("programs", {
+    await this.ensureIndex({
       mappings: {
         properties: {
           title: { type: "text" },

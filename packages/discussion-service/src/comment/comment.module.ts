@@ -7,9 +7,14 @@ import { Comment } from "src/common/entities/comment.entity";
 import { CommentService } from "./comment.service";
 import { PostCommentController } from "./post-comment.controller";
 import { CommentReplyController } from "./comment-reply.controller";
+import { RmqClientsModule } from "src/clients/rmq-clients.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Post, Comment, Vote]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([Post, Comment, Vote]),
+    AuthModule,
+    RmqClientsModule,
+  ],
   controllers: [PostCommentController, CommentReplyController],
   providers: [CommentService],
 })
