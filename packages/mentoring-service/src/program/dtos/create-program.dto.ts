@@ -52,4 +52,9 @@ export class CreateProgramDto {
   @ArrayUnique()
   @IsString({ each: true })
   skillIds?: string[];
+
+  // TODO: remove
+  @IsString()
+  @IsNotEmpty()
+  createdAt: string;
 }

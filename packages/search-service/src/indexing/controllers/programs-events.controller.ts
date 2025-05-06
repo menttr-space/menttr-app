@@ -9,13 +9,13 @@ export class ProgramsIndexingController {
   ) {}
 
   @EventPattern("program.created")
-  async onProgramCreated(@Payload() { id, ...data }: any) {
-    await this.programsIndexingService.index(id, data);
+  async onProgramCreated(@Payload() data: any) {
+    await this.programsIndexingService.index(data.id, data);
   }
 
   @EventPattern("program.updated")
-  async onProgramUpdated(@Payload() { id, ...data }: any) {
-    await this.programsIndexingService.update(id, data);
+  async onProgramUpdated(@Payload() data: any) {
+    await this.programsIndexingService.update(data.id, data);
   }
 
   @EventPattern("program.enrollment.closed")

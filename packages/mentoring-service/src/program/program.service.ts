@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Program } from "src/common/entities/program.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { CreateProgramDto } from "./dtos/create-program.dto";
 import { UpdateProgramDto } from "./dtos/update-program.dto";
 import { AuthContext } from "src/auth/auth-context.type";
@@ -30,10 +30,16 @@ export class ProgramService {
     @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
 
+  getProgramsByIds(ids: string[]) {
+    return this.programRepository.find({
+      where: { id: In(ids) },
+    });
+  }
+
   getProgram(programId: string) {
     return this.programRepository.findOne({
       where: { id: programId },
-      relations: ["skills", "specializations"],
+      relations: ["skills"],
     });
   }
 
@@ -50,6 +56,8 @@ export class ProgramService {
       ...dto,
       ownerId: ctx.user.id,
       status: ProgramStatus.Enrollment,
+      // TODO: remove
+      createdAt: new Date(dto.createdAt),
     });
 
     await this.programRepository.save(program);
@@ -71,8 +79,7 @@ export class ProgramService {
       type: savedProgram.type.toString(),
       startDate: savedProgram.startDate.toISOString(),
       endDate: savedProgram.endDate?.toISOString() || null,
-      maxParticipants: savedProgram.maxParticipants,
-      activeParticipants: savedProgram.activeParticipants,
+      enrollmentFillRate: 0,
       skillIds: skillIds || [],
       createdAt: savedProgram.createdAt.toISOString(),
     });
@@ -175,6 +182,9 @@ export class ProgramService {
 
     const savedProgram = await this.programRepository.save(program);
 
+    const enrollmentFillRate =
+      savedProgram.activeParticipants / savedProgram.maxParticipants;
+
     this.rmqClient.emit("program.updated", {
       id: savedProgram.id,
       title: savedProgram.title,
@@ -182,8 +192,7 @@ export class ProgramService {
       type: savedProgram.type.toString(),
       startDate: savedProgram.startDate.toISOString(),
       endDate: savedProgram.endDate?.toISOString() || [],
-      maxParticipants: savedProgram.maxParticipants,
-      activeParticipants: savedProgram.activeParticipants,
+      enrollmentFillRate: Math.min(enrollmentFillRate, 1),
       skillIds: skillIds || [],
       createdAt: savedProgram.createdAt.toISOString(),
     });

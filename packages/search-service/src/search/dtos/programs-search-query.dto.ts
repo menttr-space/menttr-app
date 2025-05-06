@@ -7,6 +7,7 @@ import {
   IsString,
   Min,
 } from "class-validator";
+import { transformToStringArray } from "../search.util";
 
 export class ProgramsSearchQueryDto {
   @IsOptional()
@@ -36,4 +37,9 @@ export class ProgramsSearchQueryDto {
   @IsString({ each: true })
   @Transform(({ value }: { value: string }) => value.split(","))
   readonly skills?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @Transform(transformToStringArray)
+  readonly cursor?: any[];
 }

@@ -26,6 +26,11 @@ export class ProgramController {
     return this.programService.getUserPrograms(userId);
   }
 
+  @Post("bulk")
+  getProgramsByIds(@Body("programIds") programIds: string[]) {
+    return this.programService.getProgramsByIds(programIds);
+  }
+
   @Get(":programId")
   getProgram(@Param("programId") programId: string) {
     return this.programService.getProgram(programId);

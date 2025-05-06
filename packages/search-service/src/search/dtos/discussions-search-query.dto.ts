@@ -1,5 +1,6 @@
 import { Transform } from "class-transformer";
 import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { transformToStringArray } from "../search.util";
 
 export class DiscussionsSearchQueryDto {
   @IsString()
@@ -8,17 +9,6 @@ export class DiscussionsSearchQueryDto {
 
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => {
-    if (typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value) as any[];
-        return Array.isArray(parsed) ? parsed : undefined;
-      } catch {
-        return undefined;
-      }
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return value;
-  })
+  @Transform(transformToStringArray)
   readonly cursor?: any[];
 }
