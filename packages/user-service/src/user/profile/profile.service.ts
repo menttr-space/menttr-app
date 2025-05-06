@@ -44,7 +44,7 @@ export class ProfileService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ["skills", "specializations"],
+      relations: ["skills"],
     });
 
     if (!user) {
