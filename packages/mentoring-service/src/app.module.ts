@@ -3,6 +3,7 @@ import { TypeORMModule } from "./database/typeorm.module";
 import { ConfigModule } from "@nestjs/config";
 import { ProgramModule } from "./program/program.module";
 import { ProgramParticipantModule } from "./program-participant/program-participant.module";
+import { ProgramReviewModule } from "./program-review/program-review.module";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ProgramParticipantModule } from "./program-participant/program-particip
     TypeORMModule,
     ProgramModule,
     ProgramParticipantModule,
+    ProgramReviewModule,
   ],
   controllers: [],
   providers: [],
