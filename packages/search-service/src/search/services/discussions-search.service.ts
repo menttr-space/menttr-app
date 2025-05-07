@@ -10,7 +10,8 @@ export interface SearchableContent {
   title?: string;
   content: string;
   postId: string;
-  replyToId?: string;
+  upvotesCount: number;
+  commentsCount: number;
   createdAt: string;
 }
 
@@ -32,18 +33,56 @@ export class DiscussionsSearchService {
 
     const esResult = await this.es.search<SearchableContent>({
       index: "discussions",
-      size: 5,
+      size: 10,
       query: {
-        multi_match: {
-          query,
-          fields: ["title^2", "content"],
-          fuzziness: "AUTO",
+        function_score: {
+          query: {
+            multi_match: {
+              query,
+              fields: ["title^3", "content"],
+              fuzziness: "AUTO",
+            },
+          },
+          functions: [
+            {
+              filter: { term: { type: "post" } },
+              weight: 1,
+            },
+            {
+              field_value_factor: {
+                field: "upvotesCount",
+                factor: 1.5,
+                modifier: "sqrt",
+                missing: 0,
+              },
+            },
+            {
+              field_value_factor: {
+                field: "commentsCount",
+                factor: 1.5,
+                modifier: "sqrt",
+                missing: 0,
+              },
+            },
+            {
+              gauss: {
+                createdAt: {
+                  origin: "now",
+                  scale: "2d",
+                  decay: 0.5,
+                },
+              },
+              weight: 1.5,
+            },
+          ],
+          score_mode: "sum",
+          boost_mode: "sum",
         },
       },
       sort: [
         { _score: { order: "desc" } },
         { createdAt: { order: "desc" } },
-        { id: { order: "asc" } },
+        { id: { order: "desc" } },
       ],
       search_after: cursor,
     });
@@ -65,7 +104,7 @@ export class DiscussionsSearchService {
     }
 
     const { data } = await firstValueFrom(
-      this.httpService.post<PartialPostDto>(
+      this.httpService.post<PartialPostDto[]>(
         "http://localhost:3005/posts/bulk",
         { postIds },
       ),

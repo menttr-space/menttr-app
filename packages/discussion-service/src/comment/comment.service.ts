@@ -66,6 +66,8 @@ export class CommentService {
       postId,
       content: dto.content,
       userId: ctx.user.id,
+      // TODO: remove
+      createdAt: new Date(dto.createdAt),
     });
 
     const savedComment = await this.commentRepository.save(comment);
@@ -77,7 +79,14 @@ export class CommentService {
       type: "comment",
       content: savedComment.content,
       postId: savedComment.postId,
+      upvotesCount: 0,
+      commentsCount: 0,
       createdAt: savedComment.createdAt,
+    });
+
+    this.rmqClient.emit("discussion.updated", {
+      id: postId,
+      commentsCount: post.commentsCount + 1,
     });
 
     return savedComment;
@@ -111,13 +120,8 @@ export class CommentService {
     const savedReply = await this.commentRepository.save(reply);
 
     await this.commentRepository.increment(
-      { id: parent.id },
+      { id: commentId },
       "repliesCount",
-      1,
-    );
-    await this.postRepository.increment(
-      { id: parent.post.id },
-      "commentsCount",
       1,
     );
 
@@ -126,8 +130,14 @@ export class CommentService {
       type: "reply",
       content: savedReply.content,
       postId: savedReply.postId,
-      replyToId: savedReply.replyToId,
+      upvotesCount: 0,
+      commentsCount: 0,
       createdAt: savedReply.createdAt,
+    });
+
+    this.rmqClient.emit("discussion.updated", {
+      id: commentId,
+      commentsCount: parent.repliesCount + 1,
     });
 
     return savedReply;

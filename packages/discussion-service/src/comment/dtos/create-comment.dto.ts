@@ -5,4 +5,8 @@ export class CreateCommentDto {
   @IsNotEmpty()
   @Length(1, 600)
   content: string;
+
+  // TODO: remove
+  @IsString()
+  createdAt: string;
 }

@@ -45,6 +45,8 @@ export class PostService {
       title: savedPost.title,
       content: savedPost.content,
       postId: savedPost.id,
+      upvotesCount: 0,
+      commentsCount: 0,
       createdAt: savedPost.createdAt,
     });
 
