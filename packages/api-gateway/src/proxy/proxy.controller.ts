@@ -6,7 +6,7 @@ const routes: Record<string, string> = {
   "/auth": "http://localhost:3001/auth",
   "/user": "http://localhost:3001/user",
   "/admin": "http://localhost:3001/admin",
-  "/program": "http://localhost:3002/program",
+  "/programs": "http://localhost:3002/programs",
   "/participants": "http://localhost:3002/participants",
   "/taxonomy": "http://localhost:3003/taxonomy",
   "/search": "http://localhost:3004/search",

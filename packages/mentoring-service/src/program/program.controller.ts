@@ -16,24 +16,23 @@ import { AuthUser } from "src/auth/auth-user.decorator";
 import { AuthContext } from "src/auth/auth-context.type";
 import { ApplyForProgramDto } from "./dtos/apply-for-program.dto";
 
-@Controller("program")
+@Controller("programs")
 export class ProgramController {
   constructor(private readonly programService: ProgramService) {}
 
-  // programs?user_id enpoint
-  @Get("user/:userId")
-  getUserPrograms(@Param("userId") userId: string) {
+  @Get()
+  getUserPrograms(@Query("user_id") userId: string) {
     return this.programService.getUserPrograms(userId);
-  }
-
-  @Post("bulk")
-  getProgramsByIds(@Body("programIds") programIds: string[]) {
-    return this.programService.getProgramsByIds(programIds);
   }
 
   @Get(":programId")
   getProgram(@Param("programId") programId: string) {
     return this.programService.getProgram(programId);
+  }
+
+  @Post("bulk")
+  getProgramsByIds(@Body("programIds") programIds: string[]) {
+    return this.programService.getProgramsByIds(programIds);
   }
 
   @UseGuards(AuthGuard("jwt"))

@@ -109,7 +109,7 @@ export class ProgramsSearchService {
     }
 
     const { data } = await firstValueFrom(
-      this.httpService.post<any[]>("http://localhost:3002/program/bulk", {
+      this.httpService.post<any[]>("http://localhost:3002/programs/bulk", {
         programIds,
       }),
     );

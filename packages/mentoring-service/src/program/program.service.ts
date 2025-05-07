@@ -30,9 +30,10 @@ export class ProgramService {
     @Inject(SEARCH_SERVICE) private readonly rmqClient: ClientProxy,
   ) {}
 
-  getProgramsByIds(ids: string[]) {
+  getUserPrograms(userId: string) {
     return this.programRepository.find({
-      where: { id: In(ids) },
+      where: { ownerId: userId },
+      relations: ["skills"],
     });
   }
 
@@ -40,6 +41,12 @@ export class ProgramService {
     return this.programRepository.findOne({
       where: { id: programId },
       relations: ["skills"],
+    });
+  }
+
+  getProgramsByIds(ids: string[]) {
+    return this.programRepository.find({
+      where: { id: In(ids) },
     });
   }
 
@@ -228,10 +235,5 @@ export class ProgramService {
       programId,
       dto.applicationMessage,
     );
-  }
-
-  // Move this to a separate user/programs module?
-  async getUserPrograms(userId: string) {
-    return this.programRepository.findBy({ id: userId });
   }
 }
