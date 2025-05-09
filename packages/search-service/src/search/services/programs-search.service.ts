@@ -22,7 +22,9 @@ export class ProgramsSearchService {
     const { query, cursor, ...filters } = queryDto;
 
     const must: QueryDslQueryContainer[] = [];
-    const filter: QueryDslQueryContainer[] = [];
+    const filter: QueryDslQueryContainer[] = [
+      { range: { startDate: { gte: "now" } } },
+    ];
 
     if (query) {
       must.push({
@@ -88,7 +90,7 @@ export class ProgramsSearchService {
       },
       sort: [
         { _score: { order: "desc" } },
-        { startDate: { order: "desc" } },
+        { startDate: { order: "asc" } },
         { id: { order: "desc" } },
       ],
       search_after: cursor,
