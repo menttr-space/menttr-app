@@ -73,13 +73,6 @@ export class ProgramsSearchService {
           },
           functions: [
             {
-              field_value_factor: {
-                field: "enrollmentFillRate",
-                factor: 1.0,
-                missing: 0.0,
-              },
-            },
-            {
               gauss: {
                 startDate: {
                   origin: "now",
@@ -87,10 +80,10 @@ export class ProgramsSearchService {
                   decay: 0.5,
                 },
               },
+              weight: 0.5,
             },
           ],
           boost_mode: "sum",
-          score_mode: "sum",
         },
       },
       sort: [
