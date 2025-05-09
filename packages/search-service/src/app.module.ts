@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { IndexingModule } from "./indexing/indexing.module";
 import { SearchModule } from "./search/search.module";
+import { FeedModule } from "./feed/feed.module";
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { SearchModule } from "./search/search.module";
     }),
     IndexingModule,
     SearchModule,
+    FeedModule,
   ],
 })
 export class AppModule {}

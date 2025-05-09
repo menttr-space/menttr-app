@@ -5,6 +5,7 @@ import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { DEFAULT_PAGE_SIZE } from "../search.constants";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
+import { PROGRAMS_INDEX } from "src/indexing/indexing.constants";
 
 // TODO: use complete type
 export interface PartialSearchableContent {
@@ -63,7 +64,7 @@ export class ProgramsSearchService {
     }
 
     const results = await this.es.search<PartialSearchableContent>({
-      index: "programs",
+      index: PROGRAMS_INDEX,
       size: DEFAULT_PAGE_SIZE,
       query: {
         function_score: {

@@ -5,9 +5,10 @@ import { ProgramsIndexingController } from "./controllers/programs-events.contro
 import { ProgramsIndexingService } from "./services/programs-indexing.service";
 import { DiscussionsIndexingController } from "./controllers/discussions-events.controller";
 import { DiscussionsIndexingService } from "./services/discussions-indexing.service";
+import { RmqClientsModule } from "src/clients/rmq-clients.module";
 
 @Module({
-  imports: [ElasticModule, HttpModule],
+  imports: [ElasticModule, HttpModule, RmqClientsModule],
   controllers: [ProgramsIndexingController, DiscussionsIndexingController],
   providers: [ProgramsIndexingService, DiscussionsIndexingService],
 })

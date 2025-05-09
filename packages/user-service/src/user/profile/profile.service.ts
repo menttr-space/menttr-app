@@ -20,7 +20,11 @@ export class ProfileService {
   ) {}
 
   async getPublicProfile(userId: string) {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["skills"],
+    });
+
     if (!user) {
       throw new NotFoundException("User not found.");
     }

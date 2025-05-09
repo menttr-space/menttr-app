@@ -3,6 +3,7 @@ import { ElasticsearchService } from "@nestjs/elasticsearch";
 import { HttpService } from "@nestjs/axios";
 import { DiscussionsSearchQueryDto } from "../dtos/discussions-search-query.dto";
 import { firstValueFrom } from "rxjs";
+import { DISCUSSIONS_INDEX } from "src/indexing/indexing.constants";
 
 export interface SearchableContent {
   id: string;
@@ -32,7 +33,7 @@ export class DiscussionsSearchService {
     const { query, cursor } = dto;
 
     const esResult = await this.es.search<SearchableContent>({
-      index: "discussions",
+      index: DISCUSSIONS_INDEX,
       size: 10,
       query: {
         function_score: {

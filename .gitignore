@@ -4,8 +4,12 @@ node_modules
 # Build Outputs
 dist
 
+# Python
+__pycache__/
+
 # Environment
 .env
+venv/
 
 # Misc
 .DS_Store

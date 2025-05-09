@@ -12,6 +12,7 @@ const routes: Record<string, string> = {
   "/search": "http://localhost:3004/search",
   "/posts": "http://localhost:3005/posts",
   "/comments": "http://localhost:3005/comments",
+  "/feed": "http://localhost:3004/feed",
 };
 
 const proxyMiddlewares: Record<

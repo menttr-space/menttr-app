@@ -1,29 +1,55 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
 import { IndexingService } from "../indexing.service";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
+import { EMBEDDING_SERVICE } from "src/clients/clients.constants";
+import { ClientProxy } from "@nestjs/microservices";
+import { PROGRAMS_INDEX } from "../indexing.constants";
+
+// TODO: use complete type
+type PartialSkillsDto = {
+  name: string;
+  slug: string;
+};
 
 @Injectable()
 export class ProgramsIndexingService extends IndexingService {
-  protected indexName = "programs";
+  protected indexName = PROGRAMS_INDEX;
 
   constructor(
     es: ElasticsearchService,
     private readonly httpService: HttpService,
+    @Inject(EMBEDDING_SERVICE)
+    private readonly embeddingServiceClient: ClientProxy,
   ) {
     super(es);
   }
 
   async index(id: string, document: Record<string, any>) {
     const { skillIds, ...doc } = document;
+
     const skillIdsString = (skillIds as string[]).toString();
-    const skills = await firstValueFrom(
-      this.httpService.get<{ slug: string }[]>(
+    const { data: skills } = await firstValueFrom(
+      this.httpService.get<PartialSkillsDto[]>(
         `http://localhost:3003/taxonomy/skills?ids=${skillIdsString}`,
       ),
     );
-    doc.skills = skills.data.map((skill) => skill.slug);
+    const skillSlugs = skills.map((skill) => skill.slug);
+    const skillNamesString = skills.map((skill) => skill.name).join(",");
+
+    doc.skills = skillSlugs;
+
+    const { embedding } = await firstValueFrom(
+      this.embeddingServiceClient.send<{ embedding: number[] }>(
+        { cmd: "embed" },
+        {
+          text: `Title: ${doc.title}\nDescription: ${doc.description}\nSkills: ${skillNamesString}`,
+        },
+      ),
+    );
+
+    doc.embedding = embedding;
 
     return super.index(id, doc);
   }
@@ -51,6 +77,12 @@ export class ProgramsIndexingService extends IndexingService {
           enrollmentFillRate: { type: "double" },
           skills: { type: "keyword", normalizer: "lowercase_normalizer" },
           createdAt: { type: "date" },
+          embedding: {
+            type: "dense_vector",
+            dims: 384,
+            index: true,
+            similarity: "cosine",
+          },
         },
       },
     });

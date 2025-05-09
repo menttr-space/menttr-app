@@ -4,11 +4,15 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm --recursive --parallel run build",
-    "start:dev": "pnpm --recursive --parallel run start:dev",
+    "start:dev": "concurrently \"pnpm --recursive --parallel run start:dev\" \"pnpm run start:dev:embedding-service\"",
+    "start:dev:embedding-service": "cd packages/embedding-service && ./venv/bin/python main.py",
     "test": "pnpm --recursive run test --passWithNoTests"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }

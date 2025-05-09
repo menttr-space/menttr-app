@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
 import { IndexingService } from "../indexing.service";
+import { DISCUSSIONS_INDEX } from "../indexing.constants";
 
 @Injectable()
 export class DiscussionsIndexingService extends IndexingService {
-  protected indexName = "discussions";
+  protected indexName = DISCUSSIONS_INDEX;
 
   constructor(es: ElasticsearchService) {
     super(es);
