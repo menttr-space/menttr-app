@@ -1,20 +1,29 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { ProgramFeedService } from "./services/program-feed.service";
-import { ProgramFeedQueryDto } from "./dtos/program-feed-query.dto";
 import { OptionalAuthGuard } from "src/auth/optional-auth.guard";
 import { AuthUser } from "src/auth/auth-user.decorator";
 import { AuthContext } from "src/auth/auth-context.type";
+import { FeedQueryDto } from "./dtos/feed-query.dto";
+import { DiscussionFeedService } from "./services/discussion-feed.service";
 
 @Controller("feed")
 export class FeedController {
-  constructor(private readonly programFeedService: ProgramFeedService) {}
+  constructor(
+    private readonly programFeedService: ProgramFeedService,
+    private readonly discussionFeedService: DiscussionFeedService,
+  ) {}
 
   @UseGuards(OptionalAuthGuard)
   @Get("programs")
-  getProgramsFeed(
+  getProgramFeed(
     @AuthUser({ optional: true }) ctx: AuthContext,
-    @Query() { cursor }: ProgramFeedQueryDto,
+    @Query() query: FeedQueryDto,
   ) {
-    return this.programFeedService.getProgramFeed(cursor, ctx);
+    return this.programFeedService.getProgramFeed(query, ctx);
+  }
+
+  @Get("dicsussions")
+  getDiscussionFeed(@Query() query: FeedQueryDto) {
+    return this.discussionFeedService.getDiscussionFeed(query);
   }
 }

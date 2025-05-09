@@ -8,6 +8,7 @@ import { AuthContext } from "src/auth/auth-context.type";
 import { EMBEDDING_SERVICE } from "src/clients/clients.constants";
 import { PROGRAMS_INDEX } from "src/indexing/indexing.constants";
 import { DEFAULT_PAGE_SIZE } from "src/search/search.constants";
+import { FeedQueryDto } from "../dtos/feed-query.dto";
 
 type PartialSkillDto = {
   name: string;
@@ -32,7 +33,8 @@ export class ProgramFeedService {
     private readonly embeddingServiceClient: ClientProxy,
   ) {}
 
-  async getProgramFeed(cursor: any[] | undefined, ctx: AuthContext) {
+  async getProgramFeed(queryDto: FeedQueryDto, ctx: AuthContext) {
+    const { cursor } = queryDto;
     const functions: QueryDslFunctionScoreContainer[] = [];
 
     if (ctx.user) {

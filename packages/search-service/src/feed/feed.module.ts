@@ -5,10 +5,11 @@ import { HttpModule } from "@nestjs/axios";
 import { ProgramFeedService } from "./services/program-feed.service";
 import { RmqClientsModule } from "src/clients/rmq-clients.module";
 import { AuthModule } from "src/auth/auth.module";
+import { DiscussionFeedService } from "./services/discussion-feed.service";
 
 @Module({
   imports: [AuthModule, ElasticModule, HttpModule, RmqClientsModule],
   controllers: [FeedController],
-  providers: [ProgramFeedService],
+  providers: [ProgramFeedService, DiscussionFeedService],
 })
 export class FeedModule {}
